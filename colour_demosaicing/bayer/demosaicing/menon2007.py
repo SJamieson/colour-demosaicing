@@ -18,7 +18,7 @@ import numpy as np
 from scipy.ndimage.filters import convolve, convolve1d
 
 from colour.hints import ArrayLike, Literal, NDArrayFloat
-from colour.utilities import as_float_array, ones, tsplit, tstack
+from colour.utilities import as_float_array, ones
 
 from colour_demosaicing.bayer import masks_CFA_Bayer
 
@@ -221,12 +221,12 @@ examples_merge_from_raw_files_with_post_demosaicing.ipynb>`__.
         B,
     )
 
-    RGB = tstack([R, G, B])
+    RGB = np.stack((R, G, B), axis=-1)
 
-    del R, G, B, k_b, R_r, B_r
+    del k_b, R_r, B_r
 
     if refining_step:
-        RGB = refining_step_Menon2007(RGB, tstack([R_m, G_m, B_m]), M)
+        RGB = refining_step_Menon2007(RGB, np.stack((R_m, G_m, B_m), axis=-1), M)
 
     del M, R_m, G_m, B_m
 
@@ -293,11 +293,9 @@ def refining_step_Menon2007(
             [ 0.29803923,  0.3764706 ,  0.42352942]]])
     """
 
-    R, G, B = tsplit(RGB)
-    R_m, G_m, B_m = tsplit(RGB_m)
+    R, G, B = RGB[..., 0], RGB[..., 1], RGB[..., 2]
+    R_m, G_m, B_m = RGB_m[..., 0], RGB_m[..., 1], RGB_m[..., 2]
     M = as_float_array(M)
-
-    del RGB, RGB_m
 
     # Updating of the green component.
     R_G = R - G
@@ -384,4 +382,4 @@ def refining_step_Menon2007(
 
     del R_B, R_B_m, R_m
 
-    return tstack([R, G, B])
+    return RGB
